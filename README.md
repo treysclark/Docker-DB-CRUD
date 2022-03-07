@@ -24,7 +24,6 @@ Container management consists of creating and removing containers from the comma
 ![Removing containers](/imgs/manage_containers_remove.gif)
 
 &nbsp;
-
 &nbsp;
 
 ### Manage Databases:
@@ -41,10 +40,11 @@ Database management consists of initializing (MYSQL and CassandraDB) and emptyin
 ![Empty databases](/imgs/manage_dbs_empty.gif)
 
 &nbsp;
-
 &nbsp;
 
 ### Scheduler:
-The scheduler uses a Python threading Timer to make a recursive call to the timeloop function. The timeloop function then calls the the read and write functions of the databases. `python scheduler.py` 
+The scheduler uses a Python threading Timer to make a recursive call to the timeloop function. The timeloop function then calls the the read and write functions of the databases. The script also incorporates two sleep functions for a total of a 4 second delay. 
+
+Run the script with the following command: `python scheduler.py` 
 
 ![Scheduler](/imgs/scheduler.gif)
