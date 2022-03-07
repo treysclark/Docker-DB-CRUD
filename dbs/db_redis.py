@@ -1,3 +1,4 @@
+import sys 
 import redis
 import yaml
 
@@ -9,8 +10,13 @@ import yaml
 # The 'manage_dbs.py' script will access these functions
 
 
-conn = yaml.safe_load(open('dbs/conn_redis.yaml'))
-client = redis.Redis(host=conn["host"], port=conn["port"], db=0)
+# Create connection to Redis database
+try:
+    conn = yaml.safe_load(open('dbs/conn_redis.yaml'))
+    client = redis.Redis(host=conn["host"], port=conn["port"], db=0)
+except Exception as e:
+    print("Error: redis connection\n", e)
+    sys.exit()
 
 
 def write(stamps):
@@ -18,12 +24,22 @@ def write(stamps):
     pipe = client.pipeline()
     for key, value in stamps.items():
         pipe.set(key, value)
-    pipe.execute()
+
+    try:
+        pipe.execute()
+    except Exception as e:
+        print('Error: redis did not store key/values\n', e)
+        sys.exit()
 
 
 def read():
-    # Get all keys
-    keys = client.keys()
+    try:
+        # Get all keys
+        keys = client.keys()
+    except Exception as e:
+        print('Error: redis did not retrieve keys\n', e)
+        sys.exit()
+
     # Get all values in one db call
     pipe = client.pipeline()
     for key in keys:
@@ -31,15 +47,27 @@ def read():
 
     # Convert from redis standard byte format
     keys = [key.decode("utf-8") for key in keys]
-    values = [value.decode("utf-8") for value in pipe.execute()]
-    
+
+    try:
+        values = [value.decode("utf-8") for value in pipe.execute()]
+    except Exception as e:
+        print('Error: redis did not retrieve values\n', e)
+        sys.exit()
+
     # Create dictionary for consistency between dbs
     unsorted_dict = dict(zip(keys, values))
-
     # Sort by timestamps before returning
-    return dict(sorted(unsorted_dict.items(), key=lambda item: item[1], reverse=True))
+    sorted_dict = dict(sorted(unsorted_dict.items(), key=lambda item: item[1], reverse=True))
+    # Limit results to the most recent three
+    return  {k: sorted_dict[k] for k in list(sorted_dict)[:3]}
         
 
 def empty():
-    client.flushdb()
+    try:
+        client.flushdb()
+    except Exception as e:
+        print('Error: redis was not emptied\n', e)
+        return
+
+    print("Success: redis emptied")
 

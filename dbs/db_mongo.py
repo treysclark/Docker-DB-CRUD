@@ -1,3 +1,4 @@
+import sys
 import pymongo 
 import yaml
 
@@ -9,11 +10,17 @@ import yaml
 # The 'manage_dbs.py' script will access these functions
 
 
-conn = yaml.safe_load(open('dbs/conn_mongo.yaml'))
-client = pymongo.MongoClient(f'mongodb://{conn["host"]}:{conn["port"]}/{conn["db"]}')
+# Create connection to Mongo database
+try:
+    conn = yaml.safe_load(open('dbs/conn_mongo.yaml'))
+    client = pymongo.MongoClient(f'mongodb://{conn["host"]}:{conn["port"]}/{conn["db"]}')
+    
+    db = client[conn["db"]]
+    log = db.log
+except Exception as e:
+    print("Error: mongo connection\n", e)
+    sys.exit()
 
-db = client.logs
-log = db.log
 
 
 def write(stamps):
@@ -26,17 +33,32 @@ def write(stamps):
         # Duplicate Check: Prevent inserting previous timestamps
         filter = {key:value}
         new_value = {"$set": item}
-        log.update_one(filter, new_value, upsert=True)
 
+        try:
+            log.update_one(filter, new_value, upsert=True)
+        except Exception as e:
+            print('Error: mongo did not insert document\n', e)
+            sys.exit()
 
 def read():
     stamps = {}
-    # Show only the 5 most recent timestamps
-    for log in log.find().sort('stamp', pymongo.DESCENDING).limit(5):
-        stamps[log["id"]] = log["stamp"]
+
+    try:
+        # Show only the 3 most recent timestamps
+        for row in log.find().sort('stamp', pymongo.DESCENDING).limit(3):
+            stamps[row["id"]] = row["stamp"]
+    except Exception as e:
+        print('Error: mongo did not retrieve documents\n', e)
+        sys.exit()
+
     return stamps
 
 
 def empty():
-    #Truncate logs collection
-    db.logs.drop()
+    try:
+        # Truncate logs collection
+        db.log.drop()
+    except Exception as e:
+        print('Error: mongo did not empty collection\n', e)
+
+    print("Success: mongo log collection was emptied")

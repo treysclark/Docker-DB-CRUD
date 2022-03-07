@@ -1,5 +1,4 @@
 
-import os
 import sys
 import pymysql
 import yaml
@@ -16,42 +15,65 @@ import uuid
 
 
 # Create connection to MYSQL database
-conn = yaml.safe_load(open('dbs/conn_mysql.yaml'))
-cnx = pymysql.connect(user=conn['user'], 
-    password=conn['password'],
-    host=conn['host'],
-    port=conn['port'])
-    
-# Create MYSQL cursor
-cursor = cnx.cursor()
+try:
+    conn = yaml.safe_load(open('dbs/conn_mysql.yaml'))
+    cnx = pymysql.connect(user=conn['user'], 
+        password=conn['password'],
+        host=conn['host'],
+        port=conn['port'])
 
+    # Create MYSQL cursor
+    cursor = cnx.cursor()
+except Exception as e:
+    print("Error: mysql connection\n", e)
+    sys.exit()
+    
 
 def init():
-    # Create database
-    cursor = cnx.cursor()
-    query_db = 'CREATE DATABASE IF NOT EXISTS logs;'
-    cursor.execute(query_db)
-    cnx.commit()
+    try:
+        # Create database
+        cursor = cnx.cursor()
+        query_db = 'CREATE DATABASE IF NOT EXISTS docker_db;'
+        cursor.execute(query_db)
+        cnx.commit()
+    except Exception as e:
+        print("Error: mysql database creation\n",e)
+        return
 
-    # Create table
-    query_use = 'USE logs'
-    cursor.execute(query_use)
-    cnx.commit()
-    query_tbl = 'CREATE TABLE log (id VARCHAR(36), stamp VARCHAR(20));'
-    result = cursor.execute(query_tbl)
-    cnx.commit()
-    print("MYSQL Init:", result)
+    try:
+        set_db()
+
+        # Create table
+        query_tbl = 'CREATE TABLE IF NOT EXISTS log (id VARCHAR(36), stamp VARCHAR(20));'
+        cursor.execute(query_tbl)
+        cnx.commit()
+    except Exception as e:
+        print("Error: mysql table creation\n",e)
+        return
+
+    # Notify user
+    print("Success: mysql initialized")
 
 
 def write():
+    set_db()
+
+    for row in cursor.fetchall():
+        print(row)
+
+    # Insert timestamps
     id = str(uuid.uuid4())
     time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     query = f'INSERT INTO log VALUES ("{id}", "{time}")'
     cursor.execute(query)
     cnx.commit()
 
+
 def read():
-    query = "SELECT * FROM log ORDER BY stamp DESC LIMIT 5;"
+    set_db()
+
+    # Select only the 3 most recent timestamps
+    query = "SELECT * FROM log ORDER BY stamp DESC LIMIT 3;"
     cursor.execute(query)
 
     stamps = {}
@@ -61,12 +83,33 @@ def read():
 
     return stamps
 
+
 def empty():
-    query = "TRUNCATE TABLE log"
-    cursor.execute(query)  
+    set_db()
+
+    try: 
+        query = "TRUNCATE TABLE log"
+        cursor.execute(query)  
+    except Exception as e:
+        print("Error: truncating mysql table\n", e)
+        return
+    
+    print("Success: mysql log table emptied")
+
+
+def set_db():
+    # Choose docker_db database
+    try: 
+        query_use = 'USE docker_db'
+        cursor.execute(query_use)
+        cnx.commit()
+    except Exception as e:
+        print("Error: selecting mysql database\n", e)
+        sys.exit()
 
 
 @atexit.register
 def exit_handler():
+    # Close connections
     cursor.close()
     cnx.close() 
