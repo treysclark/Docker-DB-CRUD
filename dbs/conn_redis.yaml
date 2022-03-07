@@ -1,0 +1,6 @@
+host: 'localhost'
+# Prevent conflict with local Redis instances
+port: 2400
+
+
+

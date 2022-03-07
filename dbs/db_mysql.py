@@ -16,7 +16,7 @@ import uuid
 
 
 # Create connection to MYSQL database
-conn = yaml.safe_load(open('conn_mysql.yaml'))
+conn = yaml.safe_load(open('dbs/conn_mysql.yaml'))
 cnx = pymysql.connect(user=conn['user'], 
     password=conn['password'],
     host=conn['host'],
@@ -38,8 +38,9 @@ def init():
     cursor.execute(query_use)
     cnx.commit()
     query_tbl = 'CREATE TABLE log (id VARCHAR(36), stamp VARCHAR(20));'
-    cursor.execute(query_tbl)
+    result = cursor.execute(query_tbl)
     cnx.commit()
+    print("MYSQL Init:", result)
 
 
 def write():

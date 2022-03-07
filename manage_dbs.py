@@ -3,6 +3,10 @@ import os
 import sys
 import pymysql
 import pymongo
+import dbs.db_mysql as db_mysql
+import dbs.db_mongo as db_mongo
+import dbs.db_redis as db_redis
+import dbs.db_cass as db_cass
 
 # Manage databases with the following CLAs (command line arguments)
 #  -init   -> Initialize MYSQL and Cassandra databases
@@ -10,10 +14,14 @@ import pymongo
 
 
 def init():
-    pass
+    db_mysql.init()
+    db_cass.init()
 
 def empty():
-    pass
+    db_mysql.init()
+    db_mongo.init()
+    db_redis.init()
+    db_cass.init()
 
 
 # Get CLAs

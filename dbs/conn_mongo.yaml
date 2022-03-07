@@ -1,0 +1,6 @@
+host: 'localhost'
+# Prevent conflict with local Mongo instances
+port: 1800
+db: 'logs'
+
+
