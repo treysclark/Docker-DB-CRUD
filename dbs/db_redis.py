@@ -56,9 +56,13 @@ def read():
 
     # Create dictionary for consistency between dbs
     unsorted_dict = dict(zip(keys, values))
+
     # Sort by timestamps before returning
+    # Source: https://stackoverflow.com/a/613218/848353
     sorted_dict = dict(sorted(unsorted_dict.items(), key=lambda item: item[1], reverse=True))
-    # Limit results to the most recent three
+
+    # Limit results to the most recent three timestamps
+    # Source: https://stackoverflow.com/a/12980510/848353
     return  {k: sorted_dict[k] for k in list(sorted_dict)[:3]}
         
 
