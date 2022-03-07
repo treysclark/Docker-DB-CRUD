@@ -1,4 +1,3 @@
-#pip install cassandra-driver
 import sys
 from cassandra.cluster import Cluster
 from datetime import datetime
