@@ -1,6 +1,13 @@
-# ReadWriteDockerDBs
 
-Create Docker containers for popular databases (MYSQL, MongoDB, Redis, and Cassandra). Then automate reading and writing data to each database using Python time loops.
+![Header](/imgs/header.png)
+
+## Summary:
+This is a simple project that accomplishes the following:
+ - Creates Docker containers for popular databases (MYSQL, MongoDB, Redis, and Cassandra). 
+ - Automates the reading and writing of data (timestamps) to each database using Python time loops.
+
+&nbsp;
+&nbsp;
 
 ## Requirements:
 The following drivers are required (`pip install <driver-name>`): 
@@ -9,6 +16,9 @@ The following drivers are required (`pip install <driver-name>`):
 - pymongo
 - pymysql
 - redis 
+
+&nbsp;
+&nbsp;
 
 ## Manage Containers:
 Container management consists of creating and removing containers from the command line.
@@ -43,7 +53,7 @@ Database management consists of initializing (MYSQL and CassandraDB) and emptyin
 &nbsp;
 
 ### Scheduler:
-The scheduler uses a Python threading Timer to make a recursive call to the timeloop function. The timeloop function then calls the the read and write functions of the databases. The script also incorporates two sleep functions for a total of a 4 second delay. 
+The scheduler uses a Python threading Timer to make a recursive call to the timeloop function. The timeloop function then calls the the read and write functions of the databases. The script then prints the three most recent timestamps to the terminal. The script also incorporates two sleep functions for a total of a 4 second delay. 
 
 Run the script with the following command: `python scheduler.py` 
 
